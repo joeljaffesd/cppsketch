@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Check if a filepath was provided
 if [ $# -eq 0 ]; then
@@ -31,27 +31,8 @@ if [ $? -eq 0 ]; then
     if [ -f "$EXECUTABLE_PATH" ] && [ -x "$EXECUTABLE_PATH" ]; then
         echo "Running $EXECUTABLE_NAME..."
         "$EXECUTABLE_PATH"
-    else
-        echo "Executable not found at $EXECUTABLE_PATH"
-        # Look for other executables in the current directory
-        EXECUTABLE=$(find "." -maxdepth 1 -type f -perm +111 -not -name "*.sh" | head -1)
-        
-        if [ -n "$EXECUTABLE" ]; then
-            echo "Found executable: $EXECUTABLE"
-            echo "Running executable..."
-            "$EXECUTABLE"
-        else
-            # Try looking in the build directory
-            EXECUTABLE=$(find "./build" -type f -perm +111 -not -name "*.so" -not -name "*.dylib" -not -name "*.a" -not -path "*/CMakeFiles/*" | head -1)
-            
-            if [ -n "$EXECUTABLE" ]; then
-                echo "Found executable in build directory: $EXECUTABLE"
-                echo "Running executable..."
-                "$EXECUTABLE"
-            else
-                echo "No executable found in current directory or build directory"
-            fi
-        fi
+    else 
+        echo "Executable not found!"
     fi
 else
     echo "Build failed."
