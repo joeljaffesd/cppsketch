@@ -25,6 +25,14 @@ Module.onRuntimeInitialized = function() {
 	);
 	setParameter = Module.cwrap('setParameter', null, ['string', 'string']);
 	update = Module.cwrap('update', null, null);
+
+	// check if the HEAPU8 is ready... it never is.
+	if (!Module.HEAPU8) {
+			console.warn("Module.HEAPU8 failed to load");
+	} else {
+			console.log("Module loaded, ready to go");
+	}
+
 }
 
 
@@ -36,8 +44,20 @@ var data = new Float32Array();
 // l and r are float arrays for the left and right channels that need to be filled
 function audioCallback(l, r) {
 
+		// check if the module is ready
+		if (typeof Module === 'undefined') {
+				console.warn("audioCallback skipped: Module not ready");
+				return;
+		}
+
+		// check if the HEAPU8 is ready... it never is.
+		if (!Module.HEAPU8) {
+				console.warn("audioCallback skipped: Module.HEAPU8 not ready");
+				return;
+		}
+
 	// lazy loading of the audio buffer we use to talk to c++/emscripten
-    if(dataHeap == null) {
+    if(dataHeap === null) {
         data = new Float32Array(l.length * 2);
         // Get data byte size, allocate memory on Emscripten heap, and get pointer
         var nDataBytes = data.length * data.BYTES_PER_ELEMENT;
@@ -99,6 +119,8 @@ function setupAudio(fn) {
 	scriptNode.onaudioprocess = function(audioProcessingEvent) {
 		fn(audioProcessingEvent.outputBuffer.getChannelData(0), audioProcessingEvent.outputBuffer.getChannelData(1)); 
 	};
+
+	console.log("Audio context created");
 }
 
 function startAudio() {
@@ -109,6 +131,7 @@ function startAudio() {
 	audioRunning = true;
 	document.getElementById("startStop").innerHTML = "stop &#x23F9;";
 	document.getElementById("startStop").href = "javascript: stopAudio();";
+	console.log("Audio started");
 }
 
 function stopAudio() {
@@ -116,6 +139,7 @@ function stopAudio() {
 	audioCtx.suspend().then(function() { 
 		document.getElementById("startStop").innerHTML = "start &#x25b6;";
 		document.getElementById("startStop").href = "javascript: startAudio();";
+		console.log("Audio stopped");
 	});
 
 // <a id="startStop" href="javascript: startAudio()">start &#x25b6;</a>
